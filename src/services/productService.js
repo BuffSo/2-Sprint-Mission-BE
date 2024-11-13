@@ -1,12 +1,12 @@
-import prisma from '../config/prismaClient.js';
 import { assert } from 'superstruct';
 import { CreatePoduct, PatchProduct } from '../structs.js';
+import productRepository from '../repositories/productRepository.js';
+import { Prisma } from '@prisma/client';
 
-export const getProcuts = async (req, res) => {
-  const { page = 1, pageSize = 10, orderBy = 'recent', keyword = '', category ='' } = req.query;
+export const getProcuts = async (query) => {
+  const { page = 1, pageSize = 10, orderBy = 'recent', keyword = '', category ='' } = query;
 
-  const offset = (page -1) * pageSize;
-  const skip = offset;
+  const skip = (page -1) * pageSize; //offset
   const take = parseInt(pageSize);
 
   let orderConfig;
@@ -30,62 +30,68 @@ export const getProcuts = async (req, res) => {
       category ? { category: category } : {}
     ]
   };
-  // 상품 리스트
-  const products = await prisma.product.findMany({
-    where, 
-    orderBy: orderConfig,
-    skip,
-    take,
-    include: {
-      productComments: true
-    }
-  });
-  // 총 개수
-  const totalCount = await prisma.product.count({ where });
-  res.send({
+
+  const [products, totalCount] = await Promise.all([
+    productRepository.getAll({ skip, take, where, orderBy: orderConfig }),
+    productRepository.getCount(where),
+  ]);
+
+  return {
     list: products,
-    totalCount: totalCount
-  });
+    totalCount,
+  };
 };
 
-export const getProductById = async (req, res) => {
-  const { id } = req.params;
-  const product = await prisma.product.findUnique({
-    where : { id },
-    include: {
-      productComments: true, 
-    }
-  });
+export const getProductById = async (id) => {
+  const product = await productRepository.getById(id);
   if (!product) {
-    return res.status(404).send({message: 'No product found with the given ID'});
+    const error = new Error('요청하신 상품이 존재하지 않습니다.');
+    error.status = 404;
+    throw error;
   }
-  res.send(product);
+  return product
 };
 
-export const createProduct = async(req, res) => {
-  assert(req.body, CreatePoduct);
+export const createProduct = async(data) => {
+  try {
+    assert(data, CreatePoduct);
+  } catch (e) {
+    e.status = 400;
+    throw e;
+  }
+  const product = await productRepository.save(data);
+  return product;
+}
 
-  const product = await prisma.product.create({
-    data: req.body,
-  });
-  res.status(201).send(product);
-};
+export async function updateProduct(id, data) {
+  try {
+    assert(data, PatchProduct);
+  } catch (e) {
+    e.status = 400;
+    throw e;
+  }
+  try {
+    const product = await productRepository.update(id, data);
+    return product;
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+      const error = new Error('The requested resource was not found');
+      error.status = 404;
+      throw error;
+    }
+    throw e;
+  }
+}
 
-export const updateProduct =  async(req, res) => {
-  assert(req.body, PatchProduct);
-  
-  const { id } = req.params;
-  const product = await prisma.product.update({
-    where : { id },
-    data : req.body,
-  });
-  res.send(product);
-};
-
-export const deletProduct = async(req, res) => {
-  const { id } = req.params;
-  await prisma.product.delete({
-    where : { id },
-  });
-  res.sendStatus(204);
-};
+export async function deleteProduct(id) {
+  try {
+    await productRepository.deleteById(id);
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+      const error = new Error('The requested resource was not found');
+      error.status = 404;
+      throw error;
+    }
+    throw e;
+  }
+}
