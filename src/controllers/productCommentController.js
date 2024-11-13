@@ -1,11 +1,11 @@
 import express from 'express';
-import asyncHandler from '../middleware/ayncHandler.js';
+import asyncHandler from '../middlewares/asyncHandler.js';
 import { 
   createProductComment, 
   deleteProductComment, 
   getCommentsByProductId, 
   updateProductComment
-} from '../controllers/productCommentController.js';
+} from '../services/productCommentService.js';
 
 const router = express.Router();
 // /products

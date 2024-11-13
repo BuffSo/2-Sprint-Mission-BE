@@ -1,4 +1,4 @@
-import prisma from '../utils/prismaClient.js';
+import prisma from '../config/prismaClient.js';
 import { assert } from 'superstruct';
 import { CreateProductComment, PatchProductComment } from "../structs.js";
 
