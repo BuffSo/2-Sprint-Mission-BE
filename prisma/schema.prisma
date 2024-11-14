@@ -14,12 +14,14 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
+  id              Int              @id @default(autoincrement())
   email           String           @unique
-  firstName       String
-  lastName        String
-  address         String?
-  tags            String[]
+  nickname        String?
+  image           String?
+  password        String
+  refreshToken    String?
+  provider        String           @default("local")
+  providerId      String?          @unique
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   articles        Article[]
@@ -30,16 +32,16 @@ model User {
 }
 
 model UserPreference {
-  id           String   @id @default(uuid())
+  id           Int      @id @default(autoincrement())
   receiveEmail Boolean
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id])
-  userId       String   @unique
+  userId       Int      @unique
 }
 
 model Product {
-  id              String           @id @default(uuid())
+  id              Int              @id @default(autoincrement())
   name            String
   description     String?
   category        Category
@@ -53,36 +55,36 @@ model Product {
 }
 
 model Article {
-  id              String           @id @default(uuid())
+  id              Int              @id @default(autoincrement())
   title           String
   content         String
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  user            User?            @relation(fields: [userId], references: [id])
-  userId          String?
+  author          User?            @relation(fields: [authorId], references: [id])
+  authorId        Int?
   articleComments ArticleComment[]
 }
 
 model ArticleComment {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User?    @relation(fields: [userId], references: [id])
-  userId    String?
+  userId    Int?
   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  articleId String
+  articleId Int
 }
 
 model ProductComment {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User?     @relation(fields: [userId], references: [id])
-  userId    String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  Int?
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId String
+  productId Int
 }
 
 enum Category {

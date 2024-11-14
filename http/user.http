@@ -1,0 +1,28 @@
+POST http://localhost:3000/auth/signUp
+Content-Type: application/json
+
+{
+  "email": "user01@example.com",
+  "nickname": "user01",
+  "password": "12345678"
+}
+
+###
+POST http://localhost:3000/auth/signUp
+Content-Type: application/json
+
+{
+  "email": "user02@example.com",
+  "nickname": "user02",
+  "password": "12345678"
+}
+
+###
+POST http://localhost:3000/auth/signIn
+Content-Type: application/json
+
+{
+  "email": "user01@example.com",
+  "password": "12345678"
+}
+

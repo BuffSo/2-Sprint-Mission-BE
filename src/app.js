@@ -2,7 +2,12 @@ import * as dotenv from 'dotenv';
 dotenv.config();  // 가장 먼저 호출하여 환경 변수를 로드
 
 import express from "express";
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import passport from 'passport';
 import cors from 'cors';
+
+import userController from './controllers/userController.js';
 import productController from './controllers/productController.js';
 import articleController from './controllers/articleController.js';
 import articleCommentController from './controllers/articleCommentController.js';
@@ -10,7 +15,20 @@ import productCommentController from './controllers/productCommentController.js'
 import errorHandler from './middlewares/errorHandler.js';
 
 const app = express();
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  }),
+);
+
 app.use(express.json());       // JSON 요청 파싱 미들웨어
+app.use(cookieParser());
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 const corsOptions = {
   origin: [
@@ -31,19 +49,23 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('', userController);
 app.use('/products', productController);
 app.use('/products', productCommentController);
 app.use('/articles', articleController);
 app.use('/articles', articleCommentController);
 
 // 404 Not Found 처리
-app.use((_, res) => {
+app.use((req, res) => {
   res.status(404).send({
-    message: 'The resource you are looking for does not exist',
+    message: `The endpoint for '${req.originalUrl}' does not exist`,
   });
 });
 
 // 에러 핸들러 미들웨어 (모든 라우트 뒤에 위치해야 함)
 app.use(errorHandler);
 
-app.listen(process.env.PORT || 3000, () => console.log('Server Started'));
+const port = process.env.PORT ?? 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
