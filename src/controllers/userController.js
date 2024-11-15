@@ -1,8 +1,9 @@
 import express from 'express';
 import userService from '../services/userService.js';
 import authMiddleware from '../middlewares/auth.js';
+import passport from '../config/passport.js';
 
-const RENEW_TOKEN_PATH = '/refresh-token';
+const RENEW_TOKEN_PATH = '/auth/refresh-token';
 
 const userController = express.Router();
 
@@ -24,18 +25,53 @@ userController.post('/auth/signIn', async (req, res, next) => {
     const accessToken = userService.createToken(user);
     const refreshToken = userService.createToken(user, 'refresh');
     await userService.updateUser(user.id, { refreshToken });
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refreshToken', refreshToken, { // 추가
       httpOnly: true,
       sameSite: 'none',
-      secure: true,
+      //secure: true,
+      secure: false,
       path: RENEW_TOKEN_PATH,
       maxAge: 1000 * 60 * 60,
+    });    
+    return res.json({ 
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        image: user.image,
+        nickname: user.nickname,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
     });
-    return res.json({ accessToken });
   } catch (error) {
     next(error);
   }
 });
+
+userController.post(RENEW_TOKEN_PATH, 
+  passport.authenticate('refresh-token', { session: false }),
+  async (req, res, next) => {
+    try {
+      const { refreshToken } = req.body; // 요청 바디에서 refreshToken 추출
+      const { id: userId } = req.user;
+
+      if (!refreshToken) {
+        return res.status(400).json({ message: 'Refresh token is required' });
+      }
+      // 토큰 유효성 검사 및 토큰 갱신
+      const { accessToken, newRefreshToken } = await userService.refreshToken(userId, refreshToken);
+      //새로운 refreshToken 저장
+      await userService.updateUser(userId, { refreshToken: newRefreshToken });
+
+      return res.json({ accessToken });
+    } catch (error) {
+      console.error('토큰 갱신 중 오류:', error);
+      return next(error);
+    }
+  }
+);    
 
 // 현재 로그인한 유저 정보 조회
 userController.get('/users/me', authMiddleware.verifyAccessToken, async (req, res, next) => {

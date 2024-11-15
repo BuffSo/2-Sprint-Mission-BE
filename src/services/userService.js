@@ -47,7 +47,6 @@ async function getUser(email, password) {
 }
 
 async function getUserById(id) {
-    // id가 undefined 또는 null인 경우 에러 발생
     if (!id) {
       const error = new Error('Invalid ID');
       error.code = 400; // 잘못된 요청을 나타내는 400 코드 사용
@@ -73,20 +72,24 @@ function createToken(user, type) {
   const payload = { userId: user.id };
   const options = {
     expiresIn: type === 'refresh' ? '2w' : '1h',
+    //expiresIn: type === 'refresh' ? '30d' : '5m',
   };
   return jwt.sign(payload, process.env.JWT_SECRET, options);
 }
 
 async function refreshToken(userId, refreshToken) {
   const user = await userRepository.findById(userId);
+  // 사용자 또는 토큰 유효성 검사
   if (!user || user.refreshToken !== refreshToken) {
     const error = new Error('Unauthorized');
     error.code = 401;
     throw error;
   }
-  const accessToken = createToken(user);  // 변경
-  const newRefreshToken = createToken(user, 'refresh'); // 추가
-  return { accessToken, refreshToken };  
+  // 새로운 accessToken 및 refreshToken 생성
+  const accessToken = createToken(user);  
+  const newRefreshToken = createToken(user, 'refresh'); 
+
+  return { accessToken, newRefreshToken };  
 }
 
 async function oauthCreateOrUpdate(provider, providerId, email, nickname) {

@@ -8,6 +8,7 @@ passport.use(googleStrategy);
 
 passport.use('access-token', accessTokenStrategy);
 passport.use('refresh-token', refreshTokenStrategy);
+
 passport.use(localStrategy);
 
 // 직렬화: JS 객체 -> 파일 저장이나 네트웍 전송용으로 변환 바이트 배열로 줄을 서야한다.
