@@ -25,14 +25,18 @@ userController.post('/auth/signIn', async (req, res, next) => {
     const accessToken = userService.createToken(user);
     const refreshToken = userService.createToken(user, 'refresh');
     await userService.updateUser(user.id, { refreshToken });
-    res.cookie('refreshToken', refreshToken, { // 추가
-      httpOnly: true,
-      sameSite: 'none',
-      //secure: true,
-      secure: false,
-      path: RENEW_TOKEN_PATH,
-      maxAge: 1000 * 60 * 60,
-    });    
+    // ✨ 주석 처리된 코드: refreshToken을 쿠키에 저장하는 방식.
+    // ✨ 현재는 토큰 기반 인증에서 요청 바디로 refreshToken을 처리합니다.
+    // ✨ 향후 Google OAuth 추가 시 보안 강화(쿠키 사용 여부)를 고려해 활용 가능.
+    // ✨ 필요 여부가 결정되면 다시 활성화하거나 삭제할 수 있습니다.
+    // res.cookie('refreshToken', refreshToken, { 
+    //   httpOnly: true,
+    //   sameSite: 'none',
+    //   //secure: true,
+    //   secure: false,
+    //   path: RENEW_TOKEN_PATH,
+    //   maxAge: 1000 * 60 * 60,
+    // });    
     return res.json({ 
       accessToken,
       refreshToken,
@@ -51,6 +55,14 @@ userController.post('/auth/signIn', async (req, res, next) => {
 });
 
 userController.post(RENEW_TOKEN_PATH, 
+  /* ==========================
+   * - Debugging시 주석 해제
+   * ========================== */
+  // async (req, res, next) => {
+  //   console.log('=== Request Body ===');
+  //   console.log(JSON.stringify(req.body, null, 2));
+  //   next();
+  // },
   passport.authenticate('refresh-token', { session: false }),
   async (req, res, next) => {
     try {
@@ -65,7 +77,10 @@ userController.post(RENEW_TOKEN_PATH,
       //새로운 refreshToken 저장
       await userService.updateUser(userId, { refreshToken: newRefreshToken });
 
-      return res.json({ accessToken });
+      return res.json({ 
+        accessToken,
+        newRefreshToken // 새로운 refreshToken도 클라이언트로 반환
+      });
     } catch (error) {
       console.error('토큰 갱신 중 오류:', error);
       return next(error);

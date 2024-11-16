@@ -2,6 +2,14 @@ import userRepository from "../repositories/userRepository.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+// 토큰 만료 시간
+const TOKEN_EXPIRATION = {
+  ACCESS: '1m',  
+  REFRESH: '30d' 
+  // ACCESS: '1h',  
+  // REFRESH: '2w' 
+};
+
 async function hashingPassword(password) {
   return bcrypt.hash(password, 10);
 }
@@ -71,15 +79,25 @@ async function updateUser(id, data) {
 function createToken(user, type) {
   const payload = { userId: user.id };
   const options = {
-    expiresIn: type === 'refresh' ? '2w' : '1h',
-    //expiresIn: type === 'refresh' ? '30d' : '5m',
+    expiresIn: type === 'refresh' ? TOKEN_EXPIRATION.REFRESH : TOKEN_EXPIRATION.ACCESS,
   };
   return jwt.sign(payload, process.env.JWT_SECRET, options);
 }
 
 async function refreshToken(userId, refreshToken) {
+  // console.log('refreshToken func() userId:', userId);
+  // console.log('refreshToken func() refreshToken:', refreshToken);
+
   const user = await userRepository.findById(userId);
+
   // 사용자 또는 토큰 유효성 검사
+  if (!user) {
+    console.error('Error: User not found');
+  } else if (user.refreshToken !== refreshToken) {
+    console.error('Error: Refresh token mismatch');
+    console.error('Stored refreshToken:', user.refreshToken);
+  }
+
   if (!user || user.refreshToken !== refreshToken) {
     const error = new Error('Unauthorized');
     error.code = 401;
