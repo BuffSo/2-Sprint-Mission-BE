@@ -45,7 +45,7 @@ const checkProductOwnership = async (req, res, next) => {
 
   if (product.authorId !== userId) {
     const action = actionMapping[req.method] || '작업'; // 매핑되지 않은 메서드는 기본값 "작업" 사용
-    return res.status(403).json({ message: `자신이 등록한 상품만 ${action}하실 수 있습니다.` });
+    return res.status(403).json({ message: `본인이 등록한 상품만 ${action}하실 수 있습니다.` });
   }
 
   next(); // 권한 확인 성공 시 다음 미들웨어로 이동

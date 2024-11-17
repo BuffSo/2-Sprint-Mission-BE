@@ -19,7 +19,6 @@ async function isProductFavoritedByUser(productId, userId) {
       userId,
     },
   });
-  console.log('favorite', favorite);
   return !!favorite; // favorite 값이 truthy인지 확인하고 명시적으로 boolean으로 변환
 }
 

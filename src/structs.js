@@ -32,12 +32,14 @@ export const PatchArticle = s.partial(CreateArticle);
 
 export const CreateArticleComment = s.object({
   content: s.size(s.string(), 1, 1000),
+  userId: s.optional(s.number()), 
 });
 
 export const PatchArtcleComment = s.partial(CreateArticleComment);
 
 export const CreateProductComment = s.object({
   content: s.size(s.string(), 1, 1000),
+  userId: s.optional(s.number()), 
 });
 
 export const PatchProductComment = s.partial(CreateProductComment);

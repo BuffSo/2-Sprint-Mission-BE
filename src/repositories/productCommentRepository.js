@@ -15,7 +15,11 @@ async function getCount(where) {
 
 async function save(commentData) {
   return prisma.productComment.create({
-    data: commentData,
+    data: {
+      content: commentData.content,
+      productId: commentData.productId,
+      authorId: commentData.authorId, // authorId 추가
+    },
   });
 }
 
@@ -32,10 +36,20 @@ async function deleteById(commentId) {
   });
 }
 
+async function getById(commentId) {
+  return prisma.productComment.findUnique({
+    where: { id: commentId },
+    include: {
+      author: true, // 작성자 정보를 함께 가져옵니다.
+    },
+  });
+}
+
 export default {
   getAll,
   getCount,
   save,
   update,
   deleteById,
+  getById,
 };

@@ -1,5 +1,6 @@
 ###
 GET http://localhost:3000/products/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTczMTg1NTk5NCwiZXhwIjoxNzMxODU2MDU0fQ.Xz1CB6FDeIM1sMnuxci9DqaUk3xaCKfp8oXpm4-UcE4
 
 ###
 GET http://localhost:3000/products/1/comments
