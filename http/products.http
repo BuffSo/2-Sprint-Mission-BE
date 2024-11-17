@@ -3,7 +3,8 @@ GET http://localhost:3000/products
 
 ###
 
-GET http://localhost:3000/products/1
+GET http://localhost:3000/products/3
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTczMTg1Mzc0NCwiZXhwIjoxNzMxODUzODA0fQ.3_A9flRmOfOYf-rBIUq2X6r1e-CBYEfb30FitgKoUoY
 
 ###
 GET http://localhost:3000/products?orderBy=oldest

@@ -40,14 +40,21 @@ const corsOptions = {
 }
 app.use(cors(corsOptions));
 
-// Content-Type 검사 미들웨어
-app.use((req, res, next) => {
-  // `PATCH`와 `POST` 요청에 대해 Content-Type을 검사
-  if ((req.method === 'POST' || req.method === 'PATCH' || req.method === 'PUT') && !req.is('application/json')) {
-    return res.status(400).send({ message: 'Content-Type must be application/json' });
-  }
-  next();
-});
+// // Content-Type 검사 미들웨어
+// app.use((req, res, next) => {
+//   // `PATCH`와 `POST` 요청에 대해 Content-Type을 검사
+//   if ((req.method === 'POST' || req.method === 'PATCH' || req.method === 'PUT') && !req.is('application/json')) {
+//     return res.status(400).send({ message: 'Content-Type must be application/json' });
+//   }
+//   next();
+// });
+
+// app.use((req, res, next) => {
+//   if ((req.method === 'POST' || req.method === 'PATCH' || req.method === 'PUT') && req.body && !req.is('application/json')) {
+//     return res.status(400).send({ message: 'Content-Type must be application/json' });
+//   }
+//   next();
+// });
 
 app.use('', userController);
 app.use('/products', productController);

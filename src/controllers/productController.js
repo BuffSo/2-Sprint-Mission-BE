@@ -9,6 +9,7 @@ import {
   updateProduct 
 } from '../services/productService.js';
 import productRepository from '../repositories/productRepository.js';
+import { addFavorite, removeFavorite } from '../services/productFavoriteService.js';
 
 const productController = express.Router();
 
@@ -58,7 +59,7 @@ productController.get('/',
 ));
 
 productController.get('/:id', 
-  //passport.authenticate('access-token', { session: false }),
+  passport.authenticate('access-token', { session: false }),
   convertIdToNumber,
   asyncHandler(async (req, res) => {
     const id = req.numericId; 
@@ -119,5 +120,41 @@ productController.delete('/:id',
     res.sendStatus(204);
   }
 ));
+
+productController.post('/:id/favorite',
+  passport.authenticate('access-token', { session: false }),
+  asyncHandler(async (req, res) => {
+    const productId = parseInt(req.params.id, 10);
+    const userId = req.user.id;
+
+    try {
+      const updatedProduct = await addFavorite(productId, userId);
+      res.status(200).json(updatedProduct);
+    } catch (error) {
+      if (error.message === '이미 찜한 상품입니다.') {
+        return res.status(400).json({ message: error.message });
+      }
+      throw error;
+    }
+  })
+);
+
+productController.delete('/:id/favorite',
+  passport.authenticate('access-token', { session: false }),
+  asyncHandler(async (req, res) => {
+    const productId = parseInt(req.params.id, 10);
+    const userId = req.user.id;
+
+    try {
+      const updatedProduct = await removeFavorite(productId, userId);
+      res.status(200).json(updatedProduct);
+    } catch (error) {
+      if (error.message === '찜하지 않은 상품입니다.') {
+        return res.status(400).json({ message: error.message });
+      }
+      throw error;
+    }
+  })
+);
 
 export default productController;

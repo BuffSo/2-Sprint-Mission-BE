@@ -61,16 +61,6 @@ export const getProcuts = async (query) => {
   };
 };
 
-// export const getProductById = async (id) => {
-//   const product = await productRepository.getById(id);
-//   if (!product) {
-//     const error = new Error('요청하신 상품이 존재하지 않습니다.');
-//     error.status = 404;
-//     throw error;
-//   }
-//   return product
-// };
-
 export const getProductById = async (id, userId = null) => {
   // 상품 상세 정보 조회
   const product = await productRepository.getById(id);
@@ -84,8 +74,8 @@ export const getProductById = async (id, userId = null) => {
   // 사용자 인증된 경우 좋아요 여부 확인
   if (userId) {
     isFavorite = await productRepository.isProductFavoritedByUser(id, userId);
+    //console.log('isFavorite', isFavorite);
   }
-
   // 요청된 응답 형식에 맞게 가공
   return {
     id: product.id,
@@ -148,3 +138,4 @@ export async function deleteProduct(id) {
     throw e;
   }
 }
+

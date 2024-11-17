@@ -44,6 +44,20 @@ async function deleteById(id) {
   });
 }
 
+async function incrementFavoriteCount(transaction, articleId) {
+  return transaction.article.update({
+    where: { id: articleId },
+    data: { favoriteCount: { increment: 1 } },
+  });
+}
+
+async function decrementFavoriteCount(transaction, articleId) {
+  return transaction.article.update({
+    where: { id: articleId },
+    data: { favoriteCount: { decrement: 1 } },
+  });
+}
+
 export default {
   save,
   getById,
@@ -51,4 +65,6 @@ export default {
   getCount,
   update,
   deleteById,
+  incrementFavoriteCount,
+  decrementFavoriteCount,
 }

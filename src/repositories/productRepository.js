@@ -19,6 +19,7 @@ async function isProductFavoritedByUser(productId, userId) {
       userId,
     },
   });
+  console.log('favorite', favorite);
   return !!favorite; // favorite 값이 truthy인지 확인하고 명시적으로 boolean으로 변환
 }
 
@@ -62,6 +63,20 @@ async function deleteById(id) {
   });
 }
 
+async function incrementFavoriteCount(transaction, productId) {
+  return transaction.product.update({
+    where: { id: productId },
+    data: { favoriteCount: { increment: 1 } },
+  });
+}
+
+async function decrementFavoriteCount(transaction, productId) {
+  return transaction.product.update({
+    where: { id: productId },
+    data: { favoriteCount: { decrement: 1 } },
+  })
+}
+
 export default {
   save,
   getById,
@@ -70,4 +85,6 @@ export default {
   update,
   deleteById,
   isProductFavoritedByUser,
+  incrementFavoriteCount,
+  decrementFavoriteCount,
 }
