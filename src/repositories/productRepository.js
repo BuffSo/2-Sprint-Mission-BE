@@ -1,9 +1,25 @@
 import prisma from '../config/prismaClient.js';
 
 async function save(product) {
+  const { authorId, ...rest } = product;  // authorId를 분리하여 관계로 설정
   return prisma.product.create({
-    data: product,
+    data: {
+      ...rest,
+      author: { 
+        connect : { id: product.authorId }  // author 관계 설정
+      },
+    },
   });
+}
+
+async function isProductFavoritedByUser(productId, userId) {
+  const favorite = await prisma.favorite.findFirst({
+    where: {
+      productId,
+      userId,
+    },
+  });
+  return !!favorite; // favorite 값이 truthy인지 확인하고 명시적으로 boolean으로 변환
 }
 
 async function getById(id) {
@@ -11,6 +27,7 @@ async function getById(id) {
     where: { id },
     include: {
       productComments: true,
+      author: true,
     },
   });
 }
@@ -23,6 +40,7 @@ async function getAll({ skip, take, where, orderBy }) {
     take,
     include: {
       productComments: true,
+      author: true,
     },
   });
 }
@@ -51,4 +69,5 @@ export default {
   getCount,
   update,
   deleteById,
+  isProductFavoritedByUser,
 }

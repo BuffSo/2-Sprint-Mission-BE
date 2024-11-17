@@ -1,77 +1,62 @@
-import prisma from '../config/prismaClient.js';
 import { assert } from 'superstruct';
-import { CreateProductComment, PatchProductComment } from "../structs.js";
+import { CreateProductComment, PatchProductComment } from '../structs.js';
+import productCommentRepository from '../repositories/productCommentRepository.js';
 
-export const getCommentsByProductId = async (req, res) => {
-  const { productId } = req.params;
-
-  // cursor 방식의 페이지네이션
-  const { cursor, take = 10, orderBy = 'recent' } = req.query;
+export const getCommentsByProductId = async (productId, query) => {
+  const { cursor, take = 10, orderBy = 'recent' } = query;
 
   let orderConfig;
   switch (orderBy) {
-    case 'oldest' :
-      orderConfig = { createdAt : 'asc' };
+    case 'oldest':
+      orderConfig = { createdAt: 'asc' };
       break;
-    case 'recent' :
-    default : 
-      orderConfig = { createdAt : 'desc' };
+    case 'recent':
+    default:
+      orderConfig = { createdAt: 'desc' };
   }
+
   const queryOptions = {
-    where: { productId }, 
-    take: parseInt(take),
+    where: { productId: parseInt(productId, 10) },
+    take: parseInt(take, 10),
     orderBy: orderConfig,
     ...(cursor && {
-      cursor: { id: cursor },
-      skip: 1
-    })
+      cursor: { id: parseInt(cursor, 10) },
+      skip: 1,
+    }),
+  };
+
+  const [comments, totalCount] = await Promise.all([
+    productCommentRepository.getAll(queryOptions),
+    productCommentRepository.getCount({ productId: parseInt(productId, 10) }),
+  ])
+  return {
+    list: comments,
+    totalCount
+  };
+};
+
+export const createProductComment = async (productId, data) => {
+  assert(data, CreateProductComment);
+
+  const { content } = data;
+  if (!content) {
+    const error = new Error('Content is required');
+    error.status = 400;
+    throw error;
   }
 
-  const productComments = await prisma.productComment.findMany(queryOptions);
-
-  res.send(productComments);
-}
-
-export const createProductComment = async (req, res) => {
-  assert(req.body, CreateProductComment);
-
-  const { productId } = req.params;
-  const { content } = req.body;
-
-  if(!content) {
-    return res.status(400).send({ message: 'Content is required' });
-  }
-
-  const productComment = await prisma.productComment.create({
-    data: {
-      content,
-      productId,
-    },
+  return productCommentRepository.save({
+    content,
+    productId: parseInt(productId, 10),
   });
+};
 
-  res.status(201).send(productComment);
-}
+export const updateProductComment = async (commentId, data) => {
+  assert(data, PatchProductComment);
 
-export const updateProductComment = async (req, res) => {
-  assert(req.body, PatchProductComment);
+  return productCommentRepository.update(parseInt(commentId, 10), data);
+};
 
-  const { commentId } = req.params;
-  const { content } = req.body;
-
-  const updatedProductComment = await prisma.productComment.update({
-    where: { id: commentId },
-    data: { content },
-  });
-
-  res.send(updatedProductComment);
-}
-
-export const deleteProductComment = async (req, res) => {
-  const { commentId } = req.params;
-
-  await prisma.productComment.delete({
-    where: { id: commentId },
-  });
-
-  res.sendStatus(204);
-}
+export const deleteProductComment = async (commentId) => {
+  return productCommentRepository.deleteById(parseInt(commentId, 10));
+};

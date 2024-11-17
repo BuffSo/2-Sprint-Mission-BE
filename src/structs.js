@@ -13,11 +13,12 @@ const CATEGORIES = [
 export const CreatePoduct = s.object({
   name: s.size(s.string(), 1, 10), 
   description: s.optional(s.size(s.string(), 10, 100)),
-  category: s.enums(CATEGORIES),
+  category: s.optional(s.enums(CATEGORIES)),
   price: s.min(s.number(), 0),
-  stock: s.min(s.integer(), 0),
-  // tags는 optional로 설정
+  stock: s.optional(s.min(s.integer(), 0)),
+  images: s.optional(s.array(s.size(s.string(), 1, 255))),
   tags: s.optional(s.array(s.size(s.string(), 1, 5))),
+  authorId: s.number(),
 });
 
 export const PatchProduct = s.partial(CreatePoduct);

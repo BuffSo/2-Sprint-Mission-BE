@@ -1,3 +1,10 @@
+###
+GET http://localhost:3000/products/1
+
+###
+GET http://localhost:3000/products/1/comments
+
+###
 GET http://localhost:3000/products/1e112c02-7c92-4d52-b76e-485e41e3f64d/comments
 
 ### 댓글 없는 상품
