@@ -50,7 +50,8 @@ userController.post('/auth/signIn', async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    //next(error);
+    next({ status: 401, message: '로그인 실패: 이메일 또는 비밀번호를 확인하세요.' });
   }
 });
 

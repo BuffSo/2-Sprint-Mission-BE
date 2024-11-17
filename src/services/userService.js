@@ -44,15 +44,21 @@ async function createUser(user) {
 }
 
 async function getUser(email, password) {
-  const user = await userRepository.findByEmail(email);
-  if(!user) {
-    const error = new Error('Unauthorized');  // 해당 이메일이 존재 하지 않음
-    error.code = 401;                         // 404 ?
-    throw error;
+  try {
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      const error = new Error('해당 이메일이 존재하지 않습니다.'); 
+      error.code = 401; 
+      throw error;
+    }
+    await verifyPassword(password, user.password); // 비밀번호 검증
+    return filterSensitiveUserData(user);
+  } catch (error) {
+    console.error('로그인 오류:', error.message); // 에러 로그 추가
+    throw error; 
   }
-  verifyPassword(password, user.password);  // 실패시 verifyPassword 함수 내에서 throw Error
-  return filterSensitiveUserData(user);
 }
+
 
 async function getUserById(id) {
     if (!id) {
