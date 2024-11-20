@@ -1,11 +1,11 @@
 import express from 'express';
-import asyncHandler from '../middleware/ayncHandler.js';
+import asyncHandler from '../middlewares/asyncHandler.js';
 import { 
   createArticleComment, 
   deleteArticleComment, 
   getCommentsByArticleId, 
   updateArticleComment
-} from '../controllers/articleCommentController.js';
+} from '../services/articleCommentService.js';
 
 const router = express.Router();
 // /articles

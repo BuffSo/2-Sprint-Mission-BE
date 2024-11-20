@@ -2,6 +2,15 @@
 GET http://localhost:3000/products
 
 ###
+
+GET http://localhost:3000/products/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTczMTg1NTg4NSwiZXhwIjoxNzMxODU1OTQ1fQ.ctzOalmoY5p66aEvnMFlTuQmLmsbJHhCXpRnghHBwZQ
+
+###
+
+GET http://localhost:3000/products/1/comments
+
+###
 GET http://localhost:3000/products?orderBy=oldest
 
 ###
