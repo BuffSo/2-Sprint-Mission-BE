@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:3000
+
+### User 생성
+POST http://localhost:3000/auth/signUp
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "nickname": "testuser",
+  "password": "12345678"
+}
