@@ -1,26 +1,33 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
-  // Patch,
+  Patch,
   Param,
-  Delete,
-  HttpCode,
-  HttpStatus,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@Controller('auth')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('signUp')
-  @HttpCode(HttpStatus.CREATED)
-  async signUp(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getProfile(@Req() req: Request & { user: { userId: string } }) {
+    const { userId } = req.user;
+    console.log('userId', userId);
+    const user = await this.userService.getById(userId);
+
+    if (!user) {
+      return { message: 'User not found' };
+    }
+
+    // 민감한 정보 필터링
+    return this.userService.filterSensitiveUserData(user);
   }
 
   @Get()
@@ -30,16 +37,11 @@ export class UserController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+    return this.userService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(id, updateUserDto);
   }
 }

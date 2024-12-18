@@ -5,7 +5,43 @@ POST http://localhost:3000/auth/signUp
 Content-Type: application/json
 
 {
-  "email": "test@example.com",
-  "nickname": "testuser",
+  "email": "test7@example.com",
+  "nickname": "testuser7",
   "password": "12345678"
 }
+
+### User 로그인
+POST http://localhost:3000/auth/signIn
+Content-Type: application/json
+
+{
+  "email": "user02@example.com",
+  "password": "12345678"
+}
+
+
+### 토큰 갱신
+POST http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYThmZTFkYS1hN2U4LTQ2ZTAtOWI4MC0wNTg4MjJlMTYwZWMiLCJpYXQiOjE3MzQ1MDc2MDUsImV4cCI6MTczNDUxMTIwNX0.5lDX6OsiaMMdCpy0I9RvtLSJCQp0BjonmyFKLKlI2eI
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYThmZTFkYS1hN2U4LTQ2ZTAtOWI4MC0wNTg4MjJlMTYwZWMiLCJpYXQiOjE3MzQ1MDc2MDUsImV4cCI6MTczNTExMjQwNX0.aODp6CVhNvTZtDus07NuhsyOeKchG7zSmup2YB9cIkU"
+}
+
+### User 로그아웃
+
+POST http://localhost:3000/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYThmZTFkYS1hN2U4LTQ2ZTAtOWI4MC0wNTg4MjJlMTYwZWMiLCJpYXQiOjE3MzQ1MDc2NTcsImV4cCI6MTczNDUxMTI1N30.P8mXUOcP0LEIqcNv5yNxfZxdtQma9TgcDwYQJ7MabIk
+
+
+### User 정보들들
+GET http://localhost:3000/users
+
+### User 정보
+GET http://localhost:3000/users/1a8fe1da-a7e8-46e0-9b80-058822e160ec
+
+### 로그인한 User 정보
+GET http://localhost:3000/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYThmZTFkYS1hN2U4LTQ2ZTAtOWI4MC0wNTg4MjJlMTYwZWMiLCJpYXQiOjE3MzQ1MDc2NTcsImV4cCI6MTczNDUxMTI1N30.P8mXUOcP0LEIqcNv5yNxfZxdtQma9TgcDwYQJ7MabIk
+

@@ -3,7 +3,7 @@ CREATE TYPE "Category" AS ENUM ('FASHION', 'BEAUTY', 'SPORTS', 'ELECTRONICS', 'H
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "nickname" TEXT,
     "image" TEXT,
@@ -17,23 +17,12 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "SocialAccount" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "provider" TEXT NOT NULL DEFAULT 'local',
     "providerId" TEXT NOT NULL,
 
     CONSTRAINT "SocialAccount_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "UserPreference" (
-    "id" SERIAL NOT NULL,
-    "receiveEmail" BOOLEAN NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" INTEGER NOT NULL,
-
-    CONSTRAINT "UserPreference_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -48,7 +37,7 @@ CREATE TABLE "Product" (
     "tags" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "authorId" INTEGER,
+    "authorId" TEXT,
     "favoriteCount" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
@@ -61,7 +50,7 @@ CREATE TABLE "Article" (
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "authorId" INTEGER,
+    "authorId" TEXT,
     "favoriteCount" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Article_pkey" PRIMARY KEY ("id")
@@ -70,7 +59,7 @@ CREATE TABLE "Article" (
 -- CreateTable
 CREATE TABLE "Favorite" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "productId" INTEGER,
     "articleId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -84,7 +73,7 @@ CREATE TABLE "ArticleComment" (
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "authorId" INTEGER,
+    "authorId" TEXT,
     "articleId" INTEGER NOT NULL,
 
     CONSTRAINT "ArticleComment_pkey" PRIMARY KEY ("id")
@@ -96,7 +85,7 @@ CREATE TABLE "ProductComment" (
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "authorId" INTEGER,
+    "authorId" TEXT,
     "productId" INTEGER NOT NULL,
 
     CONSTRAINT "ProductComment_pkey" PRIMARY KEY ("id")
@@ -111,14 +100,8 @@ CREATE UNIQUE INDEX "SocialAccount_providerId_key" ON "SocialAccount"("providerI
 -- CreateIndex
 CREATE UNIQUE INDEX "SocialAccount_provider_providerId_key" ON "SocialAccount"("provider", "providerId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "UserPreference_userId_key" ON "UserPreference"("userId");
-
 -- AddForeignKey
 ALTER TABLE "SocialAccount" ADD CONSTRAINT "SocialAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UserPreference" ADD CONSTRAINT "UserPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

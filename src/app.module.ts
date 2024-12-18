@@ -4,9 +4,16 @@ import { AppService } from './app.service';
 import { LoggerModule } from 'nestjs-pino';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+
     LoggerModule.forRoot({
       pinoHttp: {
         transport: {
@@ -23,6 +30,7 @@ import { PrismaModule } from './prisma/prisma.module';
         },
       },
     }),
+    AuthModule,
     UserModule,
     PrismaModule,
   ],

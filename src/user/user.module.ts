@@ -7,5 +7,6 @@ import { UserController } from './user.controller';
   //imports: [PrismaModule],        // PrismaModule을 global로 설정했기 때문에 생략 가능
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}
