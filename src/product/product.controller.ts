@@ -5,17 +5,15 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
-  Req,
   Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { Request } from 'express';
-import { ProductQueryDto as QueryProductDto } from './dto/query-product.dto';
+import { QueryProductDto } from './dto/query-product.dto';
+import { currentUser } from 'src/auth/decorators/current-user.decorator';
 
 @Controller('products')
 export class ProductController {
@@ -25,10 +23,9 @@ export class ProductController {
   @UseGuards(JwtAuthGuard)
   async create(
     @Body() createProductDto: CreateProductDto,
-    @Req() req: Request & { user: { userId: string } },
+    //@Req() req: Request & { user: { userId: string } },
+    @currentUser('userId') userId: string,
   ) {
-    const userId = req.user.userId;
-    console.log('userId', userId);
     return this.productService.createProduct(createProductDto, userId);
   }
 

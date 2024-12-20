@@ -20,7 +20,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    //console.log('payload', payload);
     if (!payload || !payload.userId) {
       throw new UnauthorizedException(); // payload에 userId가 없으면 인증 실패
     }

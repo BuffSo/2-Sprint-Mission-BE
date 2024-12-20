@@ -28,6 +28,7 @@ model User {
   favorites       Favorite[] // 좋아요 연결
   products        Product[]
   socials         SocialAccount[]
+  Comment         Comment[]
 }
 
 model SocialAccount {
@@ -56,6 +57,7 @@ model Product {
   authorId        String?
   favoriteCount   Int              @default(0) // 좋아요 갯수
   favoritedBy     Favorite[] // 좋아요 관계
+  Comment         Comment[]
 }
 
 model Article {
@@ -69,6 +71,7 @@ model Article {
   articleComments ArticleComment[]
   favoriteCount   Int              @default(0) // 좋아요 갯수
   favoritedBy     Favorite[] // 좋아요 관계
+  Comment         Comment[]
 }
 
 model Favorite {
@@ -80,6 +83,19 @@ model Favorite {
   article   Article? @relation(fields: [articleId], references: [id])
   articleId String?
   createdAt DateTime @default(now()) // 좋아요를 누른 시간
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId  String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ArticleComment {
