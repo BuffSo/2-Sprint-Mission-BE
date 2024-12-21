@@ -15,9 +15,8 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { QueryCommentDto } from './dto/query-comment.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
-//import { create } from 'domain';
 
-@Controller('products/:productId/comments')
+@Controller('products')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
@@ -25,7 +24,7 @@ export class CommentController {
    * 댓글 생성 API
    * ***********************************************************************************
    */
-  @Post()
+  @Post(':productId/comments')
   @UseGuards(JwtAuthGuard)
   //@UsePipes(new ValidationPipe({ transform: true })) <- main.ts에서 ValidationPipe를 글로벌로 설정했기 때문에 생략 가능
   async createComment(
@@ -35,7 +34,7 @@ export class CommentController {
   ) {
     const comment = await this.commentService.createProductComment(
       productId,
-      createCommentDto.content,
+      createCommentDto,
       userId,
     );
     return {
@@ -50,12 +49,13 @@ export class CommentController {
       },
     };
   }
+
   /*************************************************************************************
    * 댓글 목록 조회 API
    * ***********************************************************************************
    */
-  @Get()
-  async getComments(
+  @Get(':productId/comments')
+  async findAll(
     @Param('productId') productId: string,
     @Query() query: QueryCommentDto,
   ) {
@@ -68,23 +68,27 @@ export class CommentController {
     });
   }
 
-  @Get()
-  findAll() {
-    return this.commentService.findAll();
+  /*************************************************************************************
+   * 댓글 수정 API
+   * ***********************************************************************************
+   */
+  @Patch('comments/:id')
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Param('id') id: string,
+    @Body() updateCommentDto: UpdateCommentDto,
+    @currentUser('userId') userId: string,
+  ) {
+    return this.commentService.updateComment(id, updateCommentDto, userId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commentService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentService.update(+id, updateCommentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentService.remove(+id);
+  /*************************************************************************************
+   * 댓글 삭제 API
+   * ***********************************************************************************
+   */
+  @Delete('comments/:id')
+  @UseGuards(JwtAuthGuard)
+  remove(@Param('id') id: string, @currentUser('userId') userId: string) {
+    return this.commentService.deleteComment(id, userId);
   }
 }

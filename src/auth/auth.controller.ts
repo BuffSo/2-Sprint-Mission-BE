@@ -11,7 +11,6 @@ import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-//import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')

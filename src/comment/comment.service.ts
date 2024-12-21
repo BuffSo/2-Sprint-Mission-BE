@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +12,40 @@ import { Prisma } from '@prisma/client';
 export class CommentService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /*************************************************************************************
+   * 댓글 생성
+   * ***********************************************************************************
+   */
+  async createProductComment(
+    productId: string,
+    createCommentDto: CreateCommentDto,
+    userId: string,
+  ) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+    if (!product) {
+      throw new NotFoundException(
+        '댓글을 작성하려는 상품이 존재하지 않습니다.',
+      );
+    }
+
+    return this.prisma.comment.create({
+      data: {
+        content: createCommentDto.content,
+        authorId: userId,
+        productId,
+      },
+      include: {
+        author: true,
+      },
+    });
+  }
+
+  /*************************************************************************************
+   * 댓글 목록 조회
+   * ***********************************************************************************
+   */
   async getCommentsByProductId(
     productId: string,
     query: { cursor?: string; take?: number; orderBy?: string },
@@ -77,51 +111,51 @@ export class CommentService {
     };
   }
 
-  async createProductComment(
-    productId: string,
-    content: string,
+  /*************************************************************************************
+   * 댓글 수정
+   * ***********************************************************************************
+   */
+  async updateComment(
+    id: string,
+    updateCommentDto: UpdateCommentDto,
     userId: string,
   ) {
-    if (!content) {
-      throw new BadRequestException('Content is required');
-    }
-
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
+    const comment = await this.prisma.comment.findUnique({
+      where: { id },
+      select: { authorId: true },
     });
-    if (!product) {
-      throw new NotFoundException('Product not found');
+    if (!comment) {
+      throw new NotFoundException('요청하신 댓글을을 찾을 수 없습니다.');
+    }
+    if (comment.authorId !== userId) {
+      throw new ForbiddenException('댓글을을 수정할 권한이 없습니다.');
     }
 
-    return this.prisma.comment.create({
-      data: {
-        content,
-        authorId: userId,
-        productId,
-      },
-      include: {
-        author: true,
-      },
+    return this.prisma.comment.update({
+      where: { id },
+      data: updateCommentDto,
     });
   }
 
-  create(createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
-  }
+  /*************************************************************************************
+   * 댓글 삭제
+   * ***********************************************************************************
+   */
+  async deleteComment(id: string, userId: string) {
+    const comment = await this.prisma.comment.findUnique({
+      where: { id },
+      select: { authorId: true },
+    });
 
-  findAll() {
-    return `This action returns all comment`;
-  }
+    if (!comment) {
+      throw new NotFoundException('요청하신 댓글을을 찾을 수 없습니다.');
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} comment`;
-  }
+    if (comment.authorId !== userId) {
+      throw new ForbiddenException('댓글을 삭제할 권한이 없습니다.');
+    }
+    await this.prisma.comment.delete({ where: { id } });
 
-  update(id: number, updateCommentDto: UpdateCommentDto) {
-    return `This action updates a #${id} comment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
+    return { message: '댓글이 삭제되었습니다.' };
   }
 }
