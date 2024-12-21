@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,9 +13,9 @@ import { Category, Prisma } from '@prisma/client';
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /*************************************************************************************
+  /***************************************************************************
    * 상품 등록
-   * ***********************************************************************************
+   * *************************************************************************
    */
   async createProduct(createProductDto: CreateProductDto, userId: string) {
     const { name, description, price, images, tags } = createProductDto;
@@ -44,9 +45,9 @@ export class ProductService {
     });
   }
 
-  /*************************************************************************************
+  /***************************************************************************
    * 상품 목록 조회
-   * ***********************************************************************************
+   * *************************************************************************
    */
   async getProducts(query: {
     page?: number;
@@ -125,9 +126,9 @@ export class ProductService {
     return this.prisma.product.findMany();
   }
 
-  /*************************************************************************************
+  /***************************************************************************
    * 상품 상세 조회
-   * ***********************************************************************************
+   * *************************************************************************
    */
   async getProductById(id: string, userId?: string) {
     const product = await this.prisma.product.findUnique({
@@ -174,31 +175,52 @@ export class ProductService {
     };
   }
 
-  /*************************************************************************************
+  /***************************************************************************
    * 상품 수정
-   * ***********************************************************************************
+   * *************************************************************************
    */
-  async update(id: string, updateProductDto: UpdateProductDto) {
-    const { name, description, price, images, tags } = updateProductDto;
+  async updateProduct(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    userId: string,
+  ) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: {
+        authorId: true,
+      },
+    });
+    if (!product) {
+      throw new NotFoundException('요청하신 상품을 찾을 수 없습니다.');
+    }
+    if (product?.authorId !== userId) {
+      throw new ForbiddenException('상품을 수정할 권한이 없습니다.');
+    }
 
     return this.prisma.product.update({
       where: { id },
-      data: {
-        name,
-        description,
-        price,
-        images,
-        tags,
-      },
+      data: updateProductDto,
     });
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} product`;
-  }
-
-  findOne(id: string) {
-    return this.prisma.product.findUnique({
+  /***************************************************************************
+   * 상품 삭제
+   * *************************************************************************
+   */
+  async deleteProduct(id: string, userId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: {
+        authorId: true,
+      },
+    });
+    if (!product) {
+      throw new NotFoundException('요청하신 상품을 찾을 수 없습니다.');
+    }
+    if (product.authorId !== userId) {
+      throw new ForbiddenException('상품을 삭제할 권한이 없습니다.');
+    }
+    return this.prisma.product.delete({
       where: { id },
     });
   }

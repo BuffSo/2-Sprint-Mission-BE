@@ -7,7 +7,7 @@ import {
   Param,
   UseGuards,
   Query,
-  Req,
+  Delete,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -15,15 +15,14 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { QueryProductDto } from './dto/query-product.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
-import { use } from 'passport';
 
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  /*************************************************************************************
+  /***************************************************************************
    * 상품 등록 API
-   * ***********************************************************************************
+   * *************************************************************************
    */
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -35,9 +34,9 @@ export class ProductController {
     return this.productService.createProduct(createProductDto, userId);
   }
 
-  /*************************************************************************************
+  /***************************************************************************
    * 상품 목록 조회 API
-   * ***********************************************************************************
+   * *************************************************************************
    */
   @Get()
   async findAll(
@@ -48,9 +47,9 @@ export class ProductController {
     return this.productService.getProducts(query);
   }
 
-  /*************************************************************************************
+  /***************************************************************************
    * 상품 상세 조회 API
-   * ***********************************************************************************
+   * *************************************************************************
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard)
@@ -62,13 +61,27 @@ export class ProductController {
     //return this.productService.findOne(id);
   }
 
+  /***************************************************************************
+   * 상품 정보 수정 API
+   * *************************************************************************
+   */
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(id, updateProductDto);
+  @UseGuards(JwtAuthGuard)
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @currentUser('userId') userId: string,
+  ) {
+    return this.productService.updateProduct(id, updateProductDto, userId);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.productService.remove(id);
-  // }
+  /***************************************************************************
+   * 상품 삭제 API
+   * *************************************************************************
+   */
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id') id: string, @currentUser('userId') userId: string) {
+    return this.productService.deleteProduct(id, userId);
+  }
 }
