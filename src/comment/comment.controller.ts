@@ -15,6 +15,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { QueryCommentDto } from './dto/query-comment.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
+import { CommentOwnerGuard } from './guards/comment-owner.gaurds';
 
 @Controller('products')
 export class CommentController {
@@ -73,13 +74,9 @@ export class CommentController {
    * ***********************************************************************************
    */
   @Patch('comments/:id')
-  @UseGuards(JwtAuthGuard)
-  update(
-    @Param('id') id: string,
-    @Body() updateCommentDto: UpdateCommentDto,
-    @currentUser('userId') userId: string,
-  ) {
-    return this.commentService.updateComment(id, updateCommentDto, userId);
+  @UseGuards(CommentOwnerGuard)
+  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
+    return this.commentService.updateComment(id, updateCommentDto);
   }
 
   /*************************************************************************************
@@ -87,8 +84,8 @@ export class CommentController {
    * ***********************************************************************************
    */
   @Delete('comments/:id')
-  @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string, @currentUser('userId') userId: string) {
-    return this.commentService.deleteComment(id, userId);
+  @UseGuards(CommentOwnerGuard)
+  remove(@Param('id') id: string) {
+    return this.commentService.deleteComment(id);
   }
 }

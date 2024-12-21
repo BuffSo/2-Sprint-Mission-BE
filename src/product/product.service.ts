@@ -179,24 +179,7 @@ export class ProductService {
    * 상품 수정
    * *************************************************************************
    */
-  async updateProduct(
-    id: string,
-    updateProductDto: UpdateProductDto,
-    userId: string,
-  ) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-      select: {
-        authorId: true,
-      },
-    });
-    if (!product) {
-      throw new NotFoundException('요청하신 상품을 찾을 수 없습니다.');
-    }
-    if (product?.authorId !== userId) {
-      throw new ForbiddenException('상품을 수정할 권한이 없습니다.');
-    }
-
+  async updateProduct(id: string, updateProductDto: UpdateProductDto) {
     return this.prisma.product.update({
       where: { id },
       data: updateProductDto,
@@ -207,19 +190,7 @@ export class ProductService {
    * 상품 삭제
    * *************************************************************************
    */
-  async deleteProduct(id: string, userId: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-      select: {
-        authorId: true,
-      },
-    });
-    if (!product) {
-      throw new NotFoundException('요청하신 상품을 찾을 수 없습니다.');
-    }
-    if (product.authorId !== userId) {
-      throw new ForbiddenException('상품을 삭제할 권한이 없습니다.');
-    }
+  async deleteProduct(id: string) {
     return this.prisma.product.delete({
       where: { id },
     });

@@ -115,22 +115,7 @@ export class CommentService {
    * 댓글 수정
    * ***********************************************************************************
    */
-  async updateComment(
-    id: string,
-    updateCommentDto: UpdateCommentDto,
-    userId: string,
-  ) {
-    const comment = await this.prisma.comment.findUnique({
-      where: { id },
-      select: { authorId: true },
-    });
-    if (!comment) {
-      throw new NotFoundException('요청하신 댓글을을 찾을 수 없습니다.');
-    }
-    if (comment.authorId !== userId) {
-      throw new ForbiddenException('댓글을을 수정할 권한이 없습니다.');
-    }
-
+  async updateComment(id: string, updateCommentDto: UpdateCommentDto) {
     return this.prisma.comment.update({
       where: { id },
       data: updateCommentDto,
@@ -141,21 +126,7 @@ export class CommentService {
    * 댓글 삭제
    * ***********************************************************************************
    */
-  async deleteComment(id: string, userId: string) {
-    const comment = await this.prisma.comment.findUnique({
-      where: { id },
-      select: { authorId: true },
-    });
-
-    if (!comment) {
-      throw new NotFoundException('요청하신 댓글을을 찾을 수 없습니다.');
-    }
-
-    if (comment.authorId !== userId) {
-      throw new ForbiddenException('댓글을 삭제할 권한이 없습니다.');
-    }
-    await this.prisma.comment.delete({ where: { id } });
-
-    return { message: '댓글이 삭제되었습니다.' };
+  async deleteComment(id: string) {
+    return this.prisma.comment.delete({ where: { id } });
   }
 }

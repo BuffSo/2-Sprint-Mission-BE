@@ -15,6 +15,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { QueryProductDto } from './dto/query-product.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
+import { ProductOwnerGuard } from './guards/product-owner.guards';
 
 @Controller('products')
 export class ProductController {
@@ -66,13 +67,12 @@ export class ProductController {
    * *************************************************************************
    */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ProductOwnerGuard)
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
-    @currentUser('userId') userId: string,
   ) {
-    return this.productService.updateProduct(id, updateProductDto, userId);
+    return this.productService.updateProduct(id, updateProductDto);
   }
 
   /***************************************************************************
@@ -80,8 +80,8 @@ export class ProductController {
    * *************************************************************************
    */
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  async remove(@Param('id') id: string, @currentUser('userId') userId: string) {
-    return this.productService.deleteProduct(id, userId);
+  @UseGuards(ProductOwnerGuard)
+  async remove(@Param('id') id: string) {
+    return this.productService.deleteProduct(id);
   }
 }
