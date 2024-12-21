@@ -21,6 +21,10 @@ import { currentUser } from 'src/auth/decorators/current-user.decorator';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
+  /*************************************************************************************
+   * 댓글 생성 API
+   * ***********************************************************************************
+   */
   @Post()
   @UseGuards(JwtAuthGuard)
   //@UsePipes(new ValidationPipe({ transform: true })) <- main.ts에서 ValidationPipe를 글로벌로 설정했기 때문에 생략 가능
@@ -46,7 +50,10 @@ export class CommentController {
       },
     };
   }
-
+  /*************************************************************************************
+   * 댓글 목록 조회 API
+   * ***********************************************************************************
+   */
   @Get()
   async getComments(
     @Param('productId') productId: string,

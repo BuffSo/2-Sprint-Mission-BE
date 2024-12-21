@@ -12,6 +12,10 @@ import { Category, Prisma } from '@prisma/client';
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /*************************************************************************************
+   * 상품 등록
+   * ***********************************************************************************
+   */
   async createProduct(createProductDto: CreateProductDto, userId: string) {
     const { name, description, price, images, tags } = createProductDto;
 
@@ -40,6 +44,10 @@ export class ProductService {
     });
   }
 
+  /*************************************************************************************
+   * 상품 목록 조회
+   * ***********************************************************************************
+   */
   async getProducts(query: {
     page?: number;
     pageSize?: number;
@@ -117,6 +125,10 @@ export class ProductService {
     return this.prisma.product.findMany();
   }
 
+  /*************************************************************************************
+   * 상품 상세 조회
+   * ***********************************************************************************
+   */
   async getProductById(id: string, userId?: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },
@@ -161,17 +173,33 @@ export class ProductService {
       isFavorite,
     };
   }
+
+  /*************************************************************************************
+   * 상품 수정
+   * ***********************************************************************************
+   */
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    const { name, description, price, images, tags } = updateProductDto;
+
+    return this.prisma.product.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        price,
+        images,
+        tags,
+      },
+    });
+  }
+
+  remove(id: string) {
+    return `This action removes a #${id} product`;
+  }
+
   findOne(id: string) {
     return this.prisma.product.findUnique({
       where: { id },
     });
   }
-
-  update(id: string, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
-  }
-
-  // remove(id: string) {
-  //   return `This action removes a #${id} product`;
-  // }
 }

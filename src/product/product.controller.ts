@@ -7,6 +7,7 @@ import {
   Param,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -14,11 +15,16 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { QueryProductDto } from './dto/query-product.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
+import { use } from 'passport';
 
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  /*************************************************************************************
+   * 상품 등록 API
+   * ***********************************************************************************
+   */
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(
@@ -29,6 +35,10 @@ export class ProductController {
     return this.productService.createProduct(createProductDto, userId);
   }
 
+  /*************************************************************************************
+   * 상품 목록 조회 API
+   * ***********************************************************************************
+   */
   @Get()
   async findAll(
     // @Query(new ValidationPipe({ transform: true })) query: ProductQueryDto,
@@ -38,9 +48,18 @@ export class ProductController {
     return this.productService.getProducts(query);
   }
 
+  /*************************************************************************************
+   * 상품 상세 조회 API
+   * ***********************************************************************************
+   */
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(id);
+  @UseGuards(JwtAuthGuard)
+  async findOne(
+    @Param('id') id: string,
+    @currentUser('userId') userId: string,
+  ) {
+    return this.productService.getProductById(id, userId);
+    //return this.productService.findOne(id);
   }
 
   @Patch(':id')
