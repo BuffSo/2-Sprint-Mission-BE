@@ -8,6 +8,8 @@ import {
   UseGuards,
   Query,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -16,6 +18,8 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { QueryProductDto } from './dto/query-product.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
 import { ProductOwnerGuard } from './guards/product-owner.guards';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadService } from 'src/upload/upload.service';
 
 @Controller('products')
 export class ProductController {
@@ -27,12 +31,20 @@ export class ProductController {
    */
   @Post()
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', new UploadService().getFileInterceptorOptions()),
+  )
   async create(
     @Body() createProductDto: CreateProductDto,
-    //@Req() req: Request & { user: { userId: string } },
+    @UploadedFile() file: Express.Multer.File,
     @currentUser('userId') userId: string,
   ) {
-    return this.productService.createProduct(createProductDto, userId);
+    const imageUrl = file ? `/uploads/${file.filename}` : null;
+    const productWithImage = {
+      ...createProductDto,
+      images: imageUrl ? [imageUrl] : createProductDto.images,
+    };
+    return this.productService.createProduct(productWithImage, userId);
   }
 
   /***************************************************************************
@@ -68,11 +80,22 @@ export class ProductController {
    */
   @Patch(':id')
   @UseGuards(ProductOwnerGuard)
+  @UseInterceptors(FileInterceptor('file'))
   async update(
     @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return this.productService.updateProduct(id, updateProductDto);
+    // 새로운 이미지 파일이 있는 경우 처리
+    const imageUrl = file ? `/uploads/${file.filename}` : undefined;
+
+    // updateProductDto에 이미지 추가
+    const updatedProductData = {
+      ...updateProductDto,
+      images: imageUrl ? [imageUrl] : updateProductDto.images,
+    };
+
+    return this.productService.updateProduct(id, updatedProductData);
   }
 
   /***************************************************************************

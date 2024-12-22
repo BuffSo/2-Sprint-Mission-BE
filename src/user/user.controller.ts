@@ -19,7 +19,6 @@ export class UserController {
   @Get('me')
   async getProfile(@Req() req: Request & { user: { userId: string } }) {
     const { userId } = req.user;
-    console.log('userId', userId);
     const user = await this.userService.getById(userId);
 
     if (!user) {

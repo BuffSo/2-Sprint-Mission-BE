@@ -32,3 +32,39 @@ GET http://localhost:3000/products?page=1&pageSize=3&orderBy=favorite&keyword=wa
 ### 상품 상세 조회
 GET http://localhost:3000/products/b4223803-6d62-4e2c-b7e4-0fc48e6ddd35
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3ZDI0MDY2MS1lNDhhLTRjODgtYmNhYi1iMWQ3MzNmOWUzNTgiLCJpYXQiOjE3MzQ3NTE3MjcsImV4cCI6MTczNDc1NTMyN30.4RNjPxbDVYJRm7p1GShWcwKbLHoWVqdNQro7pvU3GV4
+
+
+
+
+
+### 상품 등록 (이미지 업로드 포함)
+POST http://localhost:3000/products
+Content-Type: multipart/form-data; boundary=boundary123
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3ZDI0MDY2MS1lNDhhLTRjODgtYmNhYi1iMWQ3MzNmOWUzNTgiLCJpYXQiOjE3MzQ4ODA2MjUsImV4cCI6MTczNDg4NDIyNX0.GqZxOdXsEJLPdICd1FPxlDRBVRoS1D3Gtjs8ggJ-6cE
+
+--boundary123
+Content-Disposition: form-data; name="name"
+
+이미지 상품
+--boundary123
+Content-Disposition: form-data; name="description"
+
+이미지 상품 설명입니다.
+--boundary123
+Content-Disposition: form-data; name="price"
+
+20000
+--boundary123
+Content-Disposition: form-data; name="tags[]"
+
+태그1
+--boundary123
+Content-Disposition: form-data; name="tags[]"
+
+태그2
+--boundary123
+Content-Disposition: form-data; name="file"; filename="product_image.png"
+Content-Type: image/png
+
+< ./product_image.png
+--boundary123--

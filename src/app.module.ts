@@ -10,6 +10,7 @@ import { CommentModule } from './comment/comment.module';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './logger/logger.config';
 import * as fs from 'fs';
+import { UploadModule } from './upload/upload.module';
 
 // logs 폴더가 없으면 생성
 const logDir = 'logs';
@@ -29,6 +30,7 @@ if (!fs.existsSync(logDir)) {
     PrismaModule,
     ProductModule,
     CommentModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

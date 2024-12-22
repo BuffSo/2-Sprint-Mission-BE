@@ -1,4 +1,11 @@
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -8,17 +15,18 @@ export class CreateProductDto {
   @IsString()
   description?: string;
 
+  @Transform(({ value }) => parseFloat(value))
   @IsNumber()
   @IsNotEmpty()
   price: number;
 
   @IsArray()
-  @IsNotEmpty()
+  @IsOptional()
   @IsString({ each: true })
   images: string[];
 
   @IsArray()
-  @IsNotEmpty()
+  @IsOptional()
   @IsString({ each: true })
   tags: string[];
 }

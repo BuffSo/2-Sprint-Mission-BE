@@ -179,9 +179,24 @@ export class ProductService {
    * *************************************************************************
    */
   async updateProduct(id: string, updateProductDto: UpdateProductDto) {
+    // 기존 상품 데이터 조회
+    const existingProduct = await this.prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!existingProduct) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+
+    // 새 이미지가 있는 경우 기존 이미지 교체
+    const updatedImages = updateProductDto.images || existingProduct.images;
+
     return this.prisma.product.update({
       where: { id },
-      data: updateProductDto,
+      data: {
+        ...updateProductDto,
+        images: updatedImages,
+      },
     });
   }
 
