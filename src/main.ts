@@ -1,14 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from 'nestjs-pino';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './logger/logger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService); // .env 파일을 사용하기 위해 ConfigService 가져오기
 
-  app.useLogger(app.get(Logger));
+  // Winston 로거를 전역 설정
+  app.useLogger(WinstonModule.createLogger(winstonConfig));
+
+  const configService = app.get(ConfigService); // .env 파일을 사용하기 위해 ConfigService 가져오기
 
   app.useGlobalPipes(
     // 글로벌 ValidationPipe 설정

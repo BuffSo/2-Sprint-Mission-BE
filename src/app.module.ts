@@ -1,13 +1,21 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoggerModule } from 'nestjs-pino';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProductModule } from './product/product.module';
 import { CommentModule } from './comment/comment.module';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './logger/logger.config';
+import * as fs from 'fs';
+
+// logs 폴더가 없으면 생성
+const logDir = 'logs';
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
 
 @Module({
   imports: [
@@ -15,23 +23,7 @@ import { CommentModule } from './comment/comment.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-
-    LoggerModule.forRoot({
-      pinoHttp: {
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-          },
-        },
-        redact: {
-          paths: ['req.headers', 'req.remoteAddress', 'req.remotePort'], // 생략할 필드
-          remove: true, // 해당 필드를 완전히 제거
-        },
-      },
-    }),
+    WinstonModule.forRoot(winstonConfig), // logger.config.ts에서 설정 가져오기
     AuthModule,
     UserModule,
     PrismaModule,
