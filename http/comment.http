@@ -1,0 +1,14 @@
+### 댓글 생성
+POST http://localhost:3000/products/d0e448f5-2910-4f77-adf3-00757b7388fa/comments
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3ZDI0MDY2MS1lNDhhLTRjODgtYmNhYi1iMWQ3MzNmOWUzNTgiLCJpYXQiOjE3MzQ2NTg1MTcsImV4cCI6MTczNDY2MjExN30.6LXDfnBlhJzfB0fA0GQyYIb55gn652qTDnTz8sXKnEM
+
+{
+  "content": "이 상품 정말 좋네요! 3"
+}
+
+### 댓글 목록 조회
+GET http://localhost:3000/products/d0e448f5-2910-4f77-adf3-00757b7388fa/comments
+
+###
+GET http://localhost:3000/products/d0e448f5-2910-4f77-adf3-00757b7388fa/comments?limit=2&orderBy=recent
