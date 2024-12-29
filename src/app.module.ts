@@ -15,6 +15,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { LoggerModule } from './logger/logger.module';
 import { LoggingInterceptor } from './interceptors/logging.interceptors';
+import { FavoriteModule } from './favorite/favorite.module';
 
 // logs 폴더가 없으면 생성
 const logDir = 'logs';
@@ -43,6 +44,7 @@ if (!fs.existsSync(logDir)) {
     CommentModule,
     UploadModule,
     LoggerModule,
+    FavoriteModule,
   ],
   controllers: [AppController],
   providers: [AppService, LoggingInterceptor],
