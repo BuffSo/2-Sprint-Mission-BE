@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -6,78 +10,133 @@ export class FavoriteService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * 상품 좋아요 추가
+   * 좋아요 추가
    */
-  async addFavorite(productId: string, userId: string) {
-    // 상품 존재 여부 확인
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-    });
+  async addFavorite(
+    targetId: string,
+    userId: string,
+    type: 'article' | 'product',
+  ) {
+    const target = await this.findTargetById(type, targetId);
 
-    if (!product) {
-      throw new NotFoundException('해당 상품을 찾을 수 없습니다.');
+    if (!target) {
+      throw new NotFoundException(
+        `해당 ${type === 'product' ? '상품' : '게시글'}을 찾을 수 없습니다.`,
+      );
     }
 
-    // 이미 좋아요한 상품인지 확인
+    // 이미 좋아요한 경우 예외 발생
     const existingFavorite = await this.prisma.favorite.findFirst({
-      where: { productId, userId },
+      where: {
+        userId,
+        [`${type}Id`]: targetId,
+      },
     });
 
     if (existingFavorite) {
-      throw new Error('이미 찜한 상품입니다.');
+      throw new BadRequestException(
+        `이미 찜한 ${type === 'product' ? '상품' : '게시글'}입니다.`,
+      );
     }
 
-    // 트랜잭션으로 좋아요 추가 및 상품 좋아요 수 증가
-    return await this.prisma.$transaction(async (tx) => {
+    // 트랜잭션으로 좋아요 추가 및 대상 좋아요 수 증가
+    return this.prisma.$transaction(async (tx) => {
       await tx.favorite.create({
         data: {
           userId,
-          productId,
+          [`${type}Id`]: targetId,
         },
       });
 
-      const updatedProduct = await tx.product.update({
-        where: { id: productId },
-        data: {
-          favoriteCount: { increment: 1 }, // favoriteCount 증가
-        },
-      });
+      const updatedTarget = await this.updateFavoriteCount(
+        tx,
+        type,
+        targetId,
+        true,
+      );
 
       return {
-        ...updatedProduct,
+        ...updatedTarget,
         isFavorite: true,
       };
     });
   }
 
   /**
-   * 상품 좋아요 취소
+   * 좋아요 취소
    */
-  async removeFavorite(productId: string, userId: string) {
+  async removeFavorite(
+    targetId: string,
+    userId: string,
+    type: 'article' | 'product',
+  ) {
     const existingFavorite = await this.prisma.favorite.findFirst({
-      where: { productId, userId },
+      where: {
+        userId,
+        [`${type}Id`]: targetId,
+      },
     });
 
     if (!existingFavorite) {
-      throw new Error('찜하지 않은 상품입니다.');
+      throw new NotFoundException(
+        `찜하지 않은 ${type === 'product' ? '상품' : '게시글'}입니다.`,
+      );
     }
 
-    return await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       await tx.favorite.deleteMany({
-        where: { userId, productId },
-      });
-
-      const updatedProduct = await tx.product.update({
-        where: { id: productId },
-        data: {
-          favoriteCount: { decrement: 1 }, // favoriteCount 감소
+        where: {
+          userId,
+          [`${type}Id`]: targetId,
         },
       });
 
+      const updatedTarget = await this.updateFavoriteCount(
+        tx,
+        type,
+        targetId,
+        false,
+      );
+
       return {
-        ...updatedProduct,
+        ...updatedTarget,
         isFavorite: false,
       };
     });
+  }
+
+  /**
+   * 대상 존재 여부 확인
+   */
+  private async findTargetById(type: 'article' | 'product', id: string) {
+    if (type === 'product') {
+      return this.prisma.product.findUnique({ where: { id } });
+    } else {
+      return this.prisma.article.findUnique({ where: { id } });
+    }
+  }
+
+  /**
+   * favoriteCount 업데이트
+   */
+  private async updateFavoriteCount(
+    tx: any,
+    type: 'article' | 'product',
+    targetId: string,
+    increment: boolean,
+  ) {
+    const updateData = increment ? { increment: 1 } : { decrement: 1 };
+
+    if (type === 'product') {
+      return tx.product.update({
+        where: { id: targetId },
+        data: { favoriteCount: updateData },
+      });
+    } else {
+      return tx.article.update({
+        where: { id: targetId },
+        data: { favoriteCount: updateData },
+      });
+    }
   }
 }

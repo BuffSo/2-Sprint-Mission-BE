@@ -138,10 +138,6 @@ export class ProductService {
     };
   }
 
-  async findAll() {
-    return this.prisma.product.findMany();
-  }
-
   /***************************************************************************
    * 상품 상세 조회
    * *************************************************************************
@@ -229,5 +225,9 @@ export class ProductService {
     return this.prisma.product.delete({
       where: { id },
     });
+  }
+
+  async findAll() {
+    return this.prisma.product.findMany();
   }
 }

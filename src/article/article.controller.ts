@@ -42,10 +42,13 @@ export class ArticleController {
   async findAll(@Query() query: QueryArticleDto) {
     return this.articleService.getArticles(query);
   }
-
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.articleService.getArticleById(id);
+  @UseGuards(JwtAuthGuard)
+  async getArticle(
+    @Param('id') articleId: string,
+    @currentUser('userId') userId: string,
+  ) {
+    return this.articleService.getArticleById(articleId, userId);
   }
 
   @Patch(':id')

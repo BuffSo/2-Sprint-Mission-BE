@@ -34,6 +34,10 @@ export class ArticleService {
     });
   }
 
+  /***************************************************************************
+   * 게시글 목록 조회
+   * *************************************************************************
+   */
   async getArticles(query: {
     page?: number;
     pageSize?: number;
@@ -46,14 +50,16 @@ export class ArticleService {
 
     let orderConfig: Prisma.ArticleOrderByWithRelationInput;
     switch (orderBy) {
-      case 'popular':
+      case 'favorite':
         orderConfig = { favoriteCount: 'desc' };
         break;
       case 'oldest':
         orderConfig = { createdAt: 'asc' };
         break;
+      case 'recent':
       default:
         orderConfig = { createdAt: 'desc' };
+        break;
     }
 
     const where: Prisma.ArticleWhereInput = keyword
@@ -72,7 +78,13 @@ export class ArticleService {
         take,
         orderBy: orderConfig,
         include: {
-          author: { select: { nickname: true } },
+          author: {
+            select: {
+              id: true,
+              email: true,
+              nickname: true,
+            },
+          },
         },
       }),
       this.prisma.article.count({ where }),
@@ -81,17 +93,42 @@ export class ArticleService {
     return { list: articles, totalCount, hasMore: skip + take < totalCount };
   }
 
-  async getArticleById(id: string) {
+  /***************************************************************************
+   * 게시글 상세 조회
+   * *************************************************************************
+   */
+  async getArticleById(articleId: string, userId: string) {
     const article = await this.prisma.article.findUnique({
-      where: { id },
-      include: { author: true },
+      where: { id: articleId },
+      include: { author: true }, // 작성자 정보 포함
     });
 
     if (!article) {
-      throw new NotFoundException('Requested article not found');
+      throw new Error('게시글을 찾을 수 없습니다.');
     }
 
-    return article;
+    // 좋아요 여부 확인
+    const userFavorite = !!(await this.prisma.favorite.findFirst({
+      where: {
+        userId,
+        articleId,
+      },
+    }));
+
+    // 상품 구조에 맞춘 게시글 데이터 반환
+    return {
+      id: article.id,
+      name: article.title, // name 필드로 매핑
+      description: article.content,
+      price: null, // 게시글은 가격이 없으므로 null
+      tags: [], // 게시글에 태그가 없으면 빈 배열
+      images: ['/images/articles/default.png'], // 기본 이미지 설정
+      ownerId: article.author.id,
+      ownerNickname: article.author.nickname,
+      createdAt: article.createdAt,
+      favoriteCount: article.favoriteCount,
+      isFavorite: userFavorite,
+    };
   }
 
   async updateArticle(id: string, updateArticleDto: UpdateArticleDto) {
