@@ -17,27 +17,34 @@ import { QueryCommentDto } from './dto/query-comment.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
 import { CommentOwnerGuard } from './guards/comment-owner.gaurds';
 
-@Controller('products')
+/**
+ * 상품 및 게시글 댓글 컨트롤러
+ * @Controller('/:type') - 상품(products) 또는 게시글(articles)을 동적으로 처리
+ */
+@Controller('/:type')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   /*************************************************************************************
-   * 댓글 생성 API
+   * 댓글 생성 API (상품 및 게시글)
    * ***********************************************************************************
    */
-  @Post(':productId/comments')
+  @Post(':targetId/comments')
   @UseGuards(JwtAuthGuard)
-  //@UsePipes(new ValidationPipe({ transform: true })) <- main.ts에서 ValidationPipe를 글로벌로 설정했기 때문에 생략 가능
   async createComment(
-    @Param('productId') productId: string,
+    @Param('targetId') targetId: string,
+    @Param('type') type: 'products' | 'articles',
     @Body() createCommentDto: CreateCommentDto,
     @currentUser('userId') userId: string,
   ) {
-    const comment = await this.commentService.createProductComment(
-      productId,
+    const targetType = type === 'products' ? 'product' : 'article';
+    const comment = await this.commentService.createComment(
+      targetId,
+      targetType,
       createCommentDto,
       userId,
     );
+
     return {
       id: comment.id,
       content: comment.content,
@@ -52,17 +59,19 @@ export class CommentController {
   }
 
   /*************************************************************************************
-   * 댓글 목록 조회 API
+   * 댓글 목록 조회 API (상품 및 게시글)
    * ***********************************************************************************
    */
-  @Get(':productId/comments')
+  @Get(':targetId/comments')
   async findAll(
-    @Param('productId') productId: string,
+    @Param('targetId') targetId: string,
+    @Param('type') type: 'products' | 'articles',
     @Query() query: QueryCommentDto,
   ) {
+    const targetType = type === 'products' ? 'product' : 'article';
     const { orderBy, cursor, limit } = query;
 
-    return this.commentService.getCommentsByProductId(productId, {
+    return this.commentService.getCommentsByTargetId(targetId, targetType, {
       orderBy,
       cursor,
       take: limit,
@@ -70,22 +79,25 @@ export class CommentController {
   }
 
   /*************************************************************************************
-   * 댓글 수정 API
+   * 댓글 수정 API (공통)
    * ***********************************************************************************
    */
   @Patch('comments/:id')
   @UseGuards(CommentOwnerGuard)
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
+  async updateComment(
+    @Param('id') id: string,
+    @Body() updateCommentDto: UpdateCommentDto,
+  ) {
     return this.commentService.updateComment(id, updateCommentDto);
   }
 
   /*************************************************************************************
-   * 댓글 삭제 API
+   * 댓글 삭제 API (공통)
    * ***********************************************************************************
    */
   @Delete('comments/:id')
   @UseGuards(CommentOwnerGuard)
-  remove(@Param('id') id: string) {
+  async removeComment(@Param('id') id: string) {
     return this.commentService.deleteComment(id);
   }
 }

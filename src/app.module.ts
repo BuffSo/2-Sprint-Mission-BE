@@ -16,6 +16,7 @@ import { join } from 'path';
 import { LoggerModule } from './logger/logger.module';
 import { LoggingInterceptor } from './interceptors/logging.interceptors';
 import { FavoriteModule } from './favorite/favorite.module';
+import { ArticleModule } from './article/article.module';
 
 // logs 폴더가 없으면 생성
 const logDir = 'logs';
@@ -45,6 +46,7 @@ if (!fs.existsSync(logDir)) {
     UploadModule,
     LoggerModule,
     FavoriteModule,
+    ArticleModule,
   ],
   controllers: [AppController],
   providers: [AppService, LoggingInterceptor],

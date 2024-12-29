@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,17 +12,27 @@ export class CommentService {
    * 댓글 생성
    * ***********************************************************************************
    */
-  async createProductComment(
-    productId: string,
+  async createComment(
+    targetId: string,
+    targetType: 'product' | 'article',
     createCommentDto: CreateCommentDto,
     userId: string,
   ) {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-    });
-    if (!product) {
+    let target;
+
+    if (targetType === 'product') {
+      target = await this.prisma.product.findUnique({
+        where: { id: targetId },
+      });
+    } else if (targetType === 'article') {
+      target = await this.prisma.article.findUnique({
+        where: { id: targetId },
+      });
+    }
+
+    if (!target) {
       throw new NotFoundException(
-        '댓글을 작성하려는 상품이 존재하지 않습니다.',
+        `${targetType === 'product' ? '상품' : '게시글'}이 존재하지 않습니다.`,
       );
     }
 
@@ -34,7 +40,7 @@ export class CommentService {
       data: {
         content: createCommentDto.content,
         authorId: userId,
-        productId,
+        [`${targetType}Id`]: targetId,
       },
       include: {
         author: true,
@@ -46,52 +52,63 @@ export class CommentService {
    * 댓글 목록 조회
    * ***********************************************************************************
    */
-  async getCommentsByProductId(
-    productId: string,
+  async getCommentsByTargetId(
+    targetId: string,
+    targetType: 'product' | 'article',
     query: { cursor?: string; take?: number; orderBy?: string },
   ) {
     const { cursor, take = 10, orderBy = 'recent' } = query;
 
     // 정렬 방식 결정
-    let orderConfig: Prisma.CommentOrderByWithRelationInput;
-    switch (orderBy) {
-      case 'oldest':
-        orderConfig = { createdAt: 'asc' };
-        break;
-      case 'recent':
-      default:
-        orderConfig = { createdAt: 'desc' };
+    const orderConfig: Prisma.CommentOrderByWithRelationInput = {
+      createdAt: orderBy === 'oldest' ? 'asc' : 'desc',
+    };
+
+    // 상품 또는 게시글 존재 여부 확인
+    let target;
+
+    if (targetType === 'product') {
+      target = await this.prisma.product.findUnique({
+        where: { id: targetId },
+      });
+    } else if (targetType === 'article') {
+      target = await this.prisma.article.findUnique({
+        where: { id: targetId },
+      });
     }
 
-    // 상품 존재 여부 체크
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-    });
-    if (!product) {
-      throw new NotFoundException('Product not found');
+    if (!target) {
+      throw new NotFoundException(
+        `${targetType === 'product' ? '상품' : '게시글'}을 찾을 수 없습니다.`,
+      );
     }
 
+    // 댓글 필터 조건 설정
+    const where =
+      targetType === 'product'
+        ? { productId: targetId }
+        : { articleId: targetId };
+
+    // 댓글 목록 및 총 개수 조회
     const [comments, totalCount] = await Promise.all([
       this.prisma.comment.findMany({
-        where: { productId },
+        where,
         take,
         orderBy: orderConfig,
-        include: {
-          author: true,
-        },
+        include: { author: true },
         ...(cursor && {
           cursor: { id: cursor },
           skip: 1,
         }),
       }),
-      this.prisma.comment.count({ where: { productId } }),
+      this.prisma.comment.count({ where }),
     ]);
 
     // 다음 커서 설정
     const nextCursor =
       comments.length > 0 ? comments[comments.length - 1].id : null;
 
-    // 응답 형식 매핑
+    // 댓글 목록 응답 매핑
     const formattedComments = comments.map((comment) => ({
       id: comment.id,
       content: comment.content,
@@ -127,6 +144,8 @@ export class CommentService {
    * ***********************************************************************************
    */
   async deleteComment(id: string) {
-    return this.prisma.comment.delete({ where: { id } });
+    return this.prisma.comment.delete({
+      where: { id },
+    });
   }
 }
