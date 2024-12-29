@@ -18,6 +18,7 @@ export class ProductService {
    */
   async createProduct(createProductDto: CreateProductDto, userId: string) {
     const { name, description, price, images, tags } = createProductDto;
+    //console.log('createProductDto', createProductDto);
 
     // 유저 검증
     const userExists = await this.prisma.user.findUnique({
@@ -28,20 +29,36 @@ export class ProductService {
       throw new BadRequestException(`User with id ${userId} does not exist`);
     }
 
-    return await this.prisma.product.create({
-      data: {
-        name,
-        description,
-        price,
-        images,
-        tags,
-        author: {
-          connect: {
-            id: userId,
+    try {
+      const product = await this.prisma.product.create({
+        data: {
+          name,
+          description,
+          price,
+          images,
+          tags,
+          author: {
+            connect: {
+              id: userId,
+            },
           },
         },
-      },
-    });
+      });
+
+      console.log(
+        `상품 등록 성공 - 상품명: ${product.name}`,
+        ProductService.name,
+      );
+
+      return product;
+    } catch (error) {
+      console.error(
+        `상품 등록 실패 - 사용자 ID: ${userId}`,
+        error.stack,
+        ProductService.name,
+      );
+      throw new BadRequestException('상품 등록에 실패했습니다.');
+    }
   }
 
   /***************************************************************************
@@ -188,14 +205,18 @@ export class ProductService {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
 
-    // 새 이미지가 있는 경우 기존 이미지 교체
+    // 기존 이미지와 새 이미지 병합
     const updatedImages = updateProductDto.images || existingProduct.images;
 
+    // Prisma를 통해 상품 업데이트
     return this.prisma.product.update({
       where: { id },
       data: {
-        ...updateProductDto,
-        images: updatedImages,
+        name: updateProductDto.name,
+        description: updateProductDto.description,
+        price: updateProductDto.price,
+        tags: updateProductDto.tags,
+        images: updatedImages, // 병합된 이미지 업데이트
       },
     });
   }

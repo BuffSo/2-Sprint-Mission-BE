@@ -2,14 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { WinstonModule } from 'nest-winston';
-import { winstonConfig } from './logger/logger.config';
+import { LoggingInterceptor } from './interceptors/logging.interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Winston 로거를 전역 설정
-  app.useLogger(WinstonModule.createLogger(winstonConfig));
+  // 전역 Interceptor 등록
+  // (DI 컨테이너에서 LoggingInterceptor를 가져와서 등록)
+  const loggingInterceptor = app.get(LoggingInterceptor);
+  app.useGlobalInterceptors(loggingInterceptor);
 
   const configService = app.get(ConfigService); // .env 파일을 사용하기 위해 ConfigService 가져오기
 
@@ -33,6 +34,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') ?? 3000;
 
   await app.listen(port);
-  console.log(`Server is running on port ${port}`);
+  const pureLogger = app.get('PURE_WINSTON_LOGGER');
+  pureLogger.info(`🚀 Server is running on port ${port}`);
 }
 bootstrap();
