@@ -3,16 +3,18 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { TOKEN_EXPIRATION } from 'src/config/jwt.config';
+import { UserRepository } from 'src/user/user.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
 
   async signIn(email: string, password: string) {
-    const user = await this.userService.getByEmail(email);
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException(
@@ -29,12 +31,14 @@ export class AuthService {
       expiresIn: TOKEN_EXPIRATION.REFRESH,
     });
 
-    await this.userService.update(user.id, { refreshToken });
+    const updatedUser = await this.userRepository.update(user.id, {
+      refreshToken,
+    });
 
     return {
       accessToken,
       refreshToken,
-      user: this.userService.filterSensitiveUserData(user),
+      user: this.userService.filterSensitiveUserData(updatedUser),
     };
   }
 
@@ -44,7 +48,7 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken);
 
       // 사용자 확인
-      const user = await this.userService.getById(payload.userId);
+      const user = await this.userRepository.findById(payload.userId);
       if (!user || user.refreshToken !== refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');
       }

@@ -25,8 +25,8 @@ export class UserController {
       return { message: 'User not found' };
     }
 
-    // 민감한 정보 필터링
-    return this.userService.filterSensitiveUserData(user);
+    // 민감한 정보 필터링은 서비스 레이어에서 처리
+    return user;
   }
 
   @Get()
@@ -36,7 +36,7 @@ export class UserController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+    return this.userService.getById(id);
   }
 
   @Patch(':id')
