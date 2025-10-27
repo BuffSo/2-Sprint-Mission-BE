@@ -25,7 +25,7 @@ export class UploadController {
         },
       }),
       fileFilter: (req, file, callback) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        if (!file.mimetype.startsWith('image/')) {
           return callback(
             new HttpException(
               '이미지 파일만 업로드할 수 있습니다!',

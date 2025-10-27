@@ -22,7 +22,7 @@ export class UploadService {
         file: { mimetype: string },
         callback: (arg0: HttpException, arg1: boolean) => void,
       ) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        if (!file.mimetype.startsWith('image/')) {
           return callback(
             new HttpException(
               '이미지 파일만 업로드할 수 있습니다!',
