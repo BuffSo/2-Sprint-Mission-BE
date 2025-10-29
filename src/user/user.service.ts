@@ -33,8 +33,8 @@ export class UserService {
       throw new BadRequestException('이미 존재하는 이메일입니다.');
     }
 
-    // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // 비밀번호 해싱 (password가 제공된 경우에만)
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
     const user = await this.userRepository.create({
       email,
       nickname,

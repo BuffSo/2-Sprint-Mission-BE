@@ -7,7 +7,7 @@ export class CreateUserDto {
   @IsOptional()
   nickname?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(8)
-  password: string;
+  password?: string;
 }

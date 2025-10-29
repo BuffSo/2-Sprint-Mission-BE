@@ -5,12 +5,15 @@ import { TOKEN_EXPIRATION } from 'src/config/jwt.config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
     UserModule,
+    PrismaModule,
     ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
 
@@ -30,7 +33,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
   exports: [],
 })
 export class AuthModule {}
