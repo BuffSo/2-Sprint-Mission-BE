@@ -4,6 +4,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoggingInterceptor } from './interceptors/logging.interceptors';
 import * as net from 'net';
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -27,6 +29,12 @@ async function isPortInUse(port: number): Promise<boolean> {
 }
 
 async function bootstrap() {
+  // uploads 디렉토리 생성 (없으면)
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService); // .env 파일을 사용하기 위해 ConfigService 가져오기
 
