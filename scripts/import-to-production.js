@@ -1,11 +1,10 @@
 /**
  * Production 환경에 데이터 import하기
  *
- * 사용법:
- * 1. 프로덕션 DATABASE_URL을 환경 변수로 설정
- * 2. node scripts/import-to-production.js
+ * 사용법 (Render Shell에서):
+ * npx prisma generate && node scripts/import-to-production.js
  *
- * 또는
+ * 또는 로컬에서:
  * DATABASE_URL="프로덕션DB주소" node scripts/import-to-production.js
  */
 
