@@ -111,6 +111,15 @@ export class AuthService {
           },
         });
       }
+
+      // 프로필 정보 업데이트 (최신 소셜 로그인 정보로)
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          nickname: name,
+          image: picture,
+        },
+      });
     } else {
       // 새 사용자 생성 (password는 null)
       user = await this.prisma.user.create({
