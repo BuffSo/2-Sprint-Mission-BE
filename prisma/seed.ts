@@ -38,8 +38,10 @@ function isValidArticle(article: any) {
 async function main() {
   console.log('🚀 Seeding started...\n');
 
-  // 프로덕션 환경인지 확인 (DATABASE_URL에 render.com이 있으면 프로덕션)
-  const isProduction = process.env.DATABASE_URL?.includes('render.com');
+  // 프로덕션 환경인지 확인
+  const isProduction = process.env.NODE_ENV === 'production' ||
+                       process.env.DATABASE_URL?.includes('render.com') ||
+                       process.env.DATABASE_URL?.includes('postgres.render.com');
 
   if (!isProduction) {
     // 로컬 개발 환경: 기존 mock 데이터 사용
