@@ -115,14 +115,11 @@ export class ArticleService {
       },
     }));
 
-    // 상품 구조에 맞춘 게시글 데이터 반환
+    // 게시글 데이터 반환
     return {
       id: article.id,
-      name: article.title, // name 필드로 매핑
-      description: article.content,
-      price: null, // 게시글은 가격이 없으므로 null
-      tags: [], // 게시글에 태그가 없으면 빈 배열
-      images: ['/images/articles/default.png'], // 기본 이미지 설정
+      title: article.title,
+      content: article.content,
       ownerId: article.author.id,
       ownerNickname: article.author.nickname,
       createdAt: article.createdAt,
