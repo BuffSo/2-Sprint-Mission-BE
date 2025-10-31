@@ -17,6 +17,7 @@ import { LoggerModule } from './logger/logger.module';
 import { LoggingInterceptor } from './interceptors/logging.interceptors';
 import { FavoriteModule } from './favorite/favorite.module';
 import { ArticleModule } from './article/article.module';
+import { RedisModule } from './redis/redis.module';
 
 // logs 폴더가 없으면 생성
 const logDir = 'logs';
@@ -38,6 +39,7 @@ if (!fs.existsSync(logDir)) {
         index: false, // index.html 자동 서빙 방지
       },
     }),
+    RedisModule, // Redis 모듈 추가 (Global)
     AuthModule,
     UserModule,
     PrismaModule,

@@ -4,11 +4,14 @@ import {
   Body,
   Patch,
   Param,
+  Post,
   UseGuards,
   Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { SendVerificationCodeDto } from './dto/send-verification-code.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('users')
@@ -42,5 +45,28 @@ export class UserController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
+  }
+
+  // 인증 코드 발송 API
+  @UseGuards(JwtAuthGuard)
+  @Post('send-verification-code')
+  async sendVerificationCode(
+    @Req() req: Request & { user: { userId: string } },
+    @Body() sendVerificationCodeDto: SendVerificationCodeDto,
+  ) {
+    return this.userService.sendVerificationCode(
+      req.user.userId,
+      sendVerificationCodeDto,
+    );
+  }
+
+  // 비밀번호 변경/설정 API
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/password')
+  async changePassword(
+    @Req() req: Request & { user: { userId: string } },
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.userService.changePassword(req.user.userId, changePasswordDto);
   }
 }
