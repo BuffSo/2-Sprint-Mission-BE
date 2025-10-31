@@ -54,10 +54,23 @@ export class UserController {
     @Req() req: Request & { user: { userId: string } },
     @Body() sendVerificationCodeDto: SendVerificationCodeDto,
   ) {
-    return this.userService.sendVerificationCode(
-      req.user.userId,
-      sendVerificationCodeDto,
-    );
+    console.log('🔔 [CONTROLLER] send-verification-code 요청 수신:', {
+      userId: req.user.userId,
+      email: sendVerificationCodeDto.email,
+      type: sendVerificationCodeDto.type,
+    });
+
+    try {
+      const result = await this.userService.sendVerificationCode(
+        req.user.userId,
+        sendVerificationCodeDto,
+      );
+      console.log('✅ [CONTROLLER] 인증 코드 발송 성공');
+      return result;
+    } catch (error) {
+      console.error('❌ [CONTROLLER] 인증 코드 발송 실패:', error);
+      throw error;
+    }
   }
 
   // 비밀번호 변경/설정 API

@@ -1,29 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
-  private transporter: Transporter;
+  private resend: Resend;
 
   constructor() {
-    // Gmail SMTP 설정
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
-    // 연결 확인
-    this.transporter.verify((error) => {
-      if (error) {
-        console.error('Email transporter error:', error);
-      } else {
-        console.log('Email server is ready to send messages');
-      }
-    });
+    // Resend 초기화
+    this.resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('Resend email service initialized');
   }
 
   /**
@@ -140,8 +125,8 @@ export class EmailService {
       </html>
     `;
 
-    await this.transporter.sendMail({
-      from: `"판다마켓" <${process.env.EMAIL_USER}>`,
+    await this.resend.emails.send({
+      from: 'Panda Market <no-reply@genys.kr>',
       to,
       subject,
       html,
@@ -249,8 +234,8 @@ export class EmailService {
       </html>
     `;
 
-    await this.transporter.sendMail({
-      from: `"판다마켓" <${process.env.EMAIL_USER}>`,
+    await this.resend.emails.send({
+      from: 'Panda Market <no-reply@genys.kr>',
       to,
       subject,
       html,

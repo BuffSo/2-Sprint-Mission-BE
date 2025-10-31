@@ -170,22 +170,6 @@ export class UserService {
       );
     }
 
-    // 현재 비밀번호 확인 (비밀번호 변경인 경우)
-    if (user.password) {
-      if (!dto.currentPassword) {
-        throw new BadRequestException('현재 비밀번호를 입력해주세요.');
-      }
-
-      const isPasswordValid = await bcrypt.compare(
-        dto.currentPassword,
-        user.password,
-      );
-
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('현재 비밀번호가 올바르지 않습니다.');
-      }
-    }
-
     // 새 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
 
