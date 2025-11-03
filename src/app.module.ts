@@ -33,7 +33,7 @@ if (!fs.existsSync(logDir)) {
     }),
     WinstonModule.forRoot(winstonConfig), // logger.config.ts에서 설정 가져오기
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
       serveStaticOptions: {
         index: false, // index.html 자동 서빙 방지
