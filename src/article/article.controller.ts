@@ -8,8 +8,6 @@ import {
   UseGuards,
   Query,
   Delete,
-  UseInterceptors,
-  UploadedFiles,
 } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -18,8 +16,6 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { QueryArticleDto } from './dto/query-article.dto';
 import { currentUser } from 'src/auth/decorators/current-user.decorator';
 import { ArticleOwnerGuard } from './guards/article-owner.guards';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { UploadService } from 'src/upload/upload.service';
 import { ConfigService } from '@nestjs/config';
 
 @Controller('articles')
