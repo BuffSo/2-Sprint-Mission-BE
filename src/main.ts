@@ -62,7 +62,7 @@ async function bootstrap() {
     //credentials: true,
   });
 
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port);
   const pureLogger = app.get('PURE_WINSTON_LOGGER');
   pureLogger.info(`🚀 Server is running on port ${port}`);
 }
