@@ -41,13 +41,16 @@ async function bootstrap() {
   // ConfigService에서 포트 가져오기
   const port = configService.get<number>('PORT') ?? 3000;
 
-  const portInUse = await isPortInUse(port);
-  if (portInUse) {
-    console.error(`❌ Port ${port} is already in use. Server not started.`);
-    // 애플리케이션 종료 및 비동기 작업 종료
-    await app.close();
-    // 모든 리소스를 해제하고 종료
-    process.exit(1);
+  // 개발 환경에서만 포트 체크 (프로덕션에서는 스킵)
+  if (process.env.NODE_ENV === 'development') {
+    const portInUse = await isPortInUse(port);
+    if (portInUse) {
+      console.error(`❌ Port ${port} is already in use. Server not started.`);
+      // 애플리케이션 종료 및 비동기 작업 종료
+      await app.close();
+      // 모든 리소스를 해제하고 종료
+      process.exit(1);
+    }
   }
 
   // 전역 Interceptor 등록
@@ -71,7 +74,7 @@ async function bootstrap() {
     //credentials: true,
   });
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   const pureLogger = app.get('PURE_WINSTON_LOGGER');
   pureLogger.info(`🚀 Server is running on port ${port}`);
 }
